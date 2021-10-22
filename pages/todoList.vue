@@ -2,15 +2,20 @@
     <v-row justify="center" align="center">
         <v-col cols="12" sm="8" md="6">
             <v-data-table
+                v-model="selected"
                 :headers="headers"
-                :items="items"
+                :items="tasks"
                 :items-per-page="5"
                 show-select
+                item-key="title"
+                @item-selected="itemSelected"
+                @toggle-select-all="itemSelected"
                 class="elevation-1"
             >
                 <template v-slot:top>
                     <v-toolbar flat>
                         <v-toolbar-title>TODO List</v-toolbar-title>
+                        <v-btn @click="csvExport(csvData)"> Export to CSV </v-btn> 
                         <v-divider
                             class="mx-4"
                             inset
@@ -64,6 +69,7 @@
                                 </v-container>
                                 <v-card-actions>
                                     <v-spacer></v-spacer>
+                                    <v-btn color="blue darken-1" text @click="closeEdit">Cancel</v-btn>
                                     <v-btn
                                     color="blue darken-1"
                                     text
@@ -79,19 +85,19 @@
                             <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
                             <v-card-actions>
                                 <v-spacer></v-spacer>
-                                <v-btn color="blue darken-1" text >Cancel</v-btn>
-                                <v-btn color="blue darken-1" text >OK</v-btn>
+                                <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
+                                <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
                                 <v-spacer></v-spacer>
                             </v-card-actions>
                             </v-card>
                         </v-dialog>
                     </v-toolbar>
                 </template>
-                <template v-slot:item.actions="{ items }">
+                <template v-slot:item.actions="{ item, id }">
                     <v-icon
                     small
                     class="mr-2"
-                    @click="editItem(item)"
+                    @click="editItem(item, id)"
                     >
                     mdi-pencil
                     </v-icon>
@@ -112,11 +118,17 @@
         data () {
             return {
                 formTitle: 'Create Task',
+                dialogEdit: false,
                 dialog: false,
                 dialogDelete: false,
                 singleSelect: true,
-                selected: [],
+                selected: localStorage.selected ? JSON.parse(localStorage.selected) : [],
+                editedIndex: -1,
                 editedItem: {
+                    title: '',
+                    description: '',
+                },
+                defaultItem: {
                     title: '',
                     description: '',
                 },
@@ -125,17 +137,77 @@
                     { text: 'Task Description', value: 'description' },
                     { text: 'Actions', value: 'actions', sortable: false },
                 ],
-                items: JSON.parse(localStorage.todoList)
+                tasks: localStorage.todoList ? JSON.parse(localStorage.todoList) : []
+            }
+        },
+        computed: {
+            csvData() {
+                return this.tasks.map(item => ({
+                    title: item.title,
+                    description: item.description
+                }));
             }
         },
         methods: {
             saveItem() {
-                this.items.push(this.editedItem)
+                if (this.editedIndex > -1) {
+                    Object.assign(this.tasks[this.editedIndex], this.editedItem)
+                } else {
+                    this.tasks.push(this.editedItem)
+                }
                 this.dialog = false
-                this.setItems()
+                this.setItems()  
             },
             setItems() {
-                localStorage.todoList = JSON.stringify(this.items)
+                localStorage.todoList = JSON.stringify(this.tasks)
+                this.editedItem = {
+                    title: '',
+                    description: ''
+                }
+                this.editedIndex = -1
+            },
+            editItem (item) {
+                this.$nextTick(() => {
+                    this.editedIndex = this.tasks.indexOf(item)
+                    this.editedItem = Object.assign({}, item)
+                })
+                this.dialog = true
+            },
+            deleteItem (item) {
+                this.editedIndex = this.tasks.indexOf(item)
+                this.editedItem = Object.assign({}, item)
+                this.dialogDelete = true
+            },
+            deleteItemConfirm (item) {
+                this.tasks.splice(this.editedIndex, 1)
+                this.closeDelete()
+                this.setItems()
+            },
+            closeDelete () {
+                this.dialogDelete = false
+            },
+            closeEdit () {
+                this.dialog = false
+            },
+            itemSelected () {
+                this.$nextTick(() => {
+                    localStorage.selected = JSON.stringify(this.selected)  
+                }) 
+            },
+            csvExport(arrData) {
+                let csvContent = "data:text/csv;charset=utf-8,";
+                csvContent += [
+                    Object.keys(arrData[0]).join(";"),
+                    ...arrData.map(item => Object.values(item).join(";"))
+                ]
+                    .join("\n")
+                    .replace(/(^\[)|(\]$)/gm, "");
+
+                const data = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", data);
+                link.setAttribute("download", "export.csv");
+                link.click();
             }
         }
     }
