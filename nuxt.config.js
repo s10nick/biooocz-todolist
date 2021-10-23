@@ -69,7 +69,7 @@ export default {
   },
 
   //Router
-  router: {
-    base: '/todo-list/'
-  }
+  // router: {
+  //   base: '/todo-list/'
+  // }
 }
