@@ -56,7 +56,18 @@
       :absolute="!fixed"
       app
     >
-      <span>&copy; {{ new Date().getFullYear() }}</span>
+      for 
+      <v-btn
+        color="primary"
+        class="mb-2" 
+        link 
+        text
+        small
+        href="https://biooo.cz" 
+        biooo.cz
+        >biooo.cz
+      </v-btn>
+       by Vlad Erinenko<span>&copy; {{ new Date().getFullYear() }}</span>
     </v-footer>
   </v-app>
 </template>
