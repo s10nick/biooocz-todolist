@@ -161,14 +161,6 @@
                 tasks: localStorage.todoList ? JSON.parse(localStorage.todoList) : []
             }
         },
-        computed: {
-            csvData() {
-                return this.tasks.map(item => ({
-                    title: item.title,
-                    description: item.description
-                }));
-            }
-        },
         methods: {
             saveItem() {
                 if (this.editedIndex > -1) {
@@ -215,21 +207,6 @@
                     localStorage.selected = JSON.stringify(this.selected)  
                 }) 
             },
-            csvExport(arrData) {
-                let csvContent = "data:text/csv;charset=utf-8,";
-                csvContent += [
-                    Object.keys(arrData[0]).join(";"),
-                    ...arrData.map(item => Object.values(item).join(";"))
-                ]
-                    .join("\n")
-                    .replace(/(^\[)|(\]$)/gm, "");
-
-                const data = encodeURI(csvContent);
-                const link = document.createElement("a");
-                link.setAttribute("href", data);
-                link.setAttribute("download", "export.csv");
-                link.click();
-            },
             changeToJSON (e) {
                 console.log(e.target.files[0])
                 var file = e.target.files[0]
@@ -255,33 +232,7 @@
 
                     }
                     this.importCVSData(result)
-                    
-                    //return result; //JavaScript object
-                    // console.log(JSON.stringify(result)); //JSON
                 }
-
-                // var lines=file.toString().split("\n");
-
-                // var result = [];
-
-                // var headers=lines[0].split(",");
-                // console.log(reader)
-                // for(var i=1;i<lines.length;i++){
-
-                //     var obj = {};
-                //     var currentline=lines[i].split(",");
-
-                //     for(var j=0;j<headers.length;j++){
-                //         obj[headers[j]] = currentline[j];
-                //     }
-
-                //     result.push(obj);
-
-                // }
-                
-                //return result; //JavaScript object
-                // console.log(JSON.stringify(result)); //JSON
-                // this.importCVSData(result)
             },
             importCVSData (data) {
                 this.tasks = data
