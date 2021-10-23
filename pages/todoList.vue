@@ -15,13 +15,6 @@
             >
                 <template v-slot:top>
                     <v-toolbar flat>
-                        <v-toolbar-title>TODO List</v-toolbar-title>
-                        <v-spacer></v-spacer>
-                        <v-divider
-                            class="mx-4"
-                            inset
-                            vertical
-                        ></v-divider>
                         <v-btn
                             color="primary"
                             dark
@@ -142,7 +135,6 @@
 </template>
 
 <script>
-import JsonCSV from 'vue-json-csv'
     export default {
         data () {
             return {
