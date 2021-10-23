@@ -1,5 +1,6 @@
 <template>
     <v-row justify="center" align="center">
+
         <v-col cols="12" sm="8" md="6">
             <v-data-table
                 v-model="selected"
@@ -15,7 +16,34 @@
                 <template v-slot:top>
                     <v-toolbar flat>
                         <v-toolbar-title>TODO List</v-toolbar-title>
-                        <v-btn @click="csvExport(csvData)"> Export to CSV </v-btn> 
+                        <v-spacer></v-spacer>
+                        <v-divider
+                            class="mx-4"
+                            inset
+                            vertical
+                        ></v-divider>
+                        <v-btn
+                            color="primary"
+                            dark
+                            class="mb-2"
+                        >
+                            <download-csv
+                                :data   = "tasks">
+                                Download Data
+                            </download-csv>
+                        </v-btn>
+                        
+                        <v-spacer></v-spacer>
+                        <v-divider
+                            class="mx-4"
+                            inset
+                            vertical
+                        ></v-divider>
+                        <input 
+                            type="file"
+                            ref="myFile"
+                            @change="changeToJSON($event)"
+                        />
                         <v-divider
                             class="mx-4"
                             inset
@@ -114,6 +142,7 @@
 </template>
 
 <script>
+import JsonCSV from 'vue-json-csv'
     export default {
         data () {
             return {
@@ -208,7 +237,65 @@
                 link.setAttribute("href", data);
                 link.setAttribute("download", "export.csv");
                 link.click();
-            }
+            },
+            changeToJSON (e) {
+                console.log(e.target.files[0])
+                var file = e.target.files[0]
+                let reader = new FileReader()
+                reader.readAsBinaryString(file)
+                reader.onload = evt => {
+                    let csv = reader.result
+                    csv = csv.replace('ï»¿', '')
+                    let lines = csv.split("\r" + "\n")
+                    let headers = lines[0].split(",")
+                    // console.log(csv.replace('ï»¿', ''))
+                    let result = []
+                    for(var i=1;i<lines.length;i++){
+
+                        var obj = {};
+                        var currentline=lines[i].split(",");
+
+                        for(var j=0;j<headers.length;j++){
+                            obj[headers[j]] = currentline[j];
+                        }
+
+                        result.push(obj);
+
+                    }
+                    this.importCVSData(result)
+                    
+                    //return result; //JavaScript object
+                    // console.log(JSON.stringify(result)); //JSON
+                }
+
+                // var lines=file.toString().split("\n");
+
+                // var result = [];
+
+                // var headers=lines[0].split(",");
+                // console.log(reader)
+                // for(var i=1;i<lines.length;i++){
+
+                //     var obj = {};
+                //     var currentline=lines[i].split(",");
+
+                //     for(var j=0;j<headers.length;j++){
+                //         obj[headers[j]] = currentline[j];
+                //     }
+
+                //     result.push(obj);
+
+                // }
+                
+                //return result; //JavaScript object
+                // console.log(JSON.stringify(result)); //JSON
+                // this.importCVSData(result)
+            },
+            importCVSData (data) {
+                this.tasks = data
+                console.log(JSON.stringify(data))
+                localStorage.todoList = JSON.stringify(data) 
+            } 
         }
     }
 </script>
