@@ -90,11 +90,11 @@
                                 </v-container>
                                 <v-card-actions>
                                     <v-spacer></v-spacer>
-                                    <v-btn color="blue darken-1" text @click="closeEdit">Cancel</v-btn>
+                                    <v-btn color="blue darken-1" text @click="closeDialog">Cancel</v-btn>
                                     <v-btn
                                     color="blue darken-1"
                                     text
-                                    @click="saveItem"
+                                    @click="saveStoreItems"
                                     >
                                     Save
                                     </v-btn>
@@ -106,8 +106,8 @@
                             <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
                             <v-card-actions>
                                 <v-spacer></v-spacer>
-                                <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
-                                <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
+                                <v-btn color="blue darken-1" text @click="closeDialogDelete">Cancel</v-btn>
+                                <v-btn color="blue darken-1" text @click="deleteStoreItemConfirm">OK</v-btn>
                                 <v-spacer></v-spacer>
                             </v-card-actions>
                             </v-card>
@@ -118,7 +118,7 @@
                     <v-icon
                     small
                     class="mr-2"
-                    @click="editItem(item, id)"
+                    @click="editItem(item)"
                     >
                     mdi-pencil
                     </v-icon>
@@ -135,72 +135,72 @@
 </template>
 
 <script>
+    import { mapMutations } from 'vuex'
+
     export default {
         data () {
             return {
                 formTitle: 'Create Task',
-                dialogEdit: false,
-                dialog: false,
-                dialogDelete: false,
                 singleSelect: true,
                 selected: localStorage.selected ? JSON.parse(localStorage.selected) : [],
-                editedIndex: -1,
-                editedItem: {
-                    title: '',
-                    description: '',
-                },
-                defaultItem: {
-                    title: '',
-                    description: '',
-                },
                 headers: [
+                    { text: 'id', value: 'id'},
                     { text: 'Title', value: 'title' },
                     { text: 'Task Description', value: 'description' },
                     { text: 'Actions', value: 'actions', sortable: false },
                 ],
-                tasks: localStorage.todoList ? JSON.parse(localStorage.todoList) : []
+            }
+        },
+        computed: {
+            tasks: {
+                get() { return this.$store.state.tasks},
+                set(value) { return }
+            },
+            editedItem: {
+                get() { return this.$store.state.editedItem},
+                set(value) { return }
+            },
+            editedIndex: {
+                get() { return this.$store.state.editedIndex},
+                set(value) { return }
+            },
+            dialog: {
+                get() { return this.$store.state.dialog },
+                set(value) { this.toggleDialog() }
+            },
+            dialogEdit: {
+                get() { return this.$store.state.dialogEdit },
+                set(value) { this.toggleDialogEdit() }
+            },
+            dialogDelete: {
+                get() { return this.$store.state.dialogDelete },
+                set(value) { this.toggleDialogDelete() }
             }
         },
         methods: {
-            saveItem() {
-                if (this.editedIndex > -1) {
-                    Object.assign(this.tasks[this.editedIndex], this.editedItem)
-                } else {
-                    this.tasks.push(this.editedItem)
-                }
-                this.dialog = false
-                this.setItems()  
-            },
-            setItems() {
+            ...mapMutations({
+                toggleDialog:'toggleDialog',
+                toggleDialogEdit:'toggleDialogEdit',
+                toggleDialogDelete:'toggleDialogDelete',
+                closeDialog:'closeDialog',
+                closeDialogEdit:'closeDialogEdit',
+                closeDialogDelete:'closeDialogDelete',
+                saveItem:'saveItem',
+                editItem:'editItem',
+                deleteItem:'deleteItem',
+                deleteItemConfirm: 'deleteItemConfirm',
+                setDefault:'setDefault'
+            }),
+            saveStoreItems() {
+                this.saveItem()
                 localStorage.todoList = JSON.stringify(this.tasks)
-                this.editedItem = {
-                    title: '',
-                    description: ''
-                }
-                this.editedIndex = -1
+                this.setDefault()
             },
-            editItem (item) {
-                this.$nextTick(() => {
-                    this.editedIndex = this.tasks.indexOf(item)
-                    this.editedItem = Object.assign({}, item)
-                })
-                this.dialog = true
-            },
-            deleteItem (item) {
-                this.editedIndex = this.tasks.indexOf(item)
-                this.editedItem = Object.assign({}, item)
-                this.dialogDelete = true
-            },
-            deleteItemConfirm (item) {
-                this.tasks.splice(this.editedIndex, 1)
-                this.closeDelete()
-                this.setItems()
-            },
-            closeDelete () {
-                this.dialogDelete = false
-            },
-            closeEdit () {
-                this.dialog = false
+            deleteStoreItemConfirm (item) {
+                this.deleteItemConfirm()
+                this.closeDialogDelete()
+                localStorage.todoList = JSON.stringify(this.tasks)
+                this.setDefault()
             },
             itemSelected () {
                 this.$nextTick(() => {
