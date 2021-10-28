@@ -1,30 +1,35 @@
 import Vue from "vue";
 import Vuex from "vuex";
+import { uuid } from 'vue-uuid'
 Vue.use(Vuex)
 
 const store = () => {
     return new Vuex.Store({
         state: {
-            dialogEdit: false,
             dialog: false,
             dialogDelete: false,
             editedIndex: -1,
-            tasks: localStorage.todoList ? JSON.parse(localStorage.todoList) : [],
+            notes: {
+                tasks: []
+            },
+            tasks: [],
             editedItem: {
-                id: '',
+                id: uuid.v1(),
                 title: '',
                 description: '',
+                note: 'common',
+                status: false
             },
         },
         mutations: {
+            extractDataStorage(state) {
+                state.notes.tasks = localStorage.todoList ? JSON.parse(localStorage.todoList) : []
+            },
             deleteItemConfirm(state) {
-                state.tasks.splice(state.editedIndex, 1)
+                state.notes.tasks.splice(state.editedIndex, 1)
             },
-            toggleDialog(state, dialog) {
-                state.dialog = !dialog
-            },
-            toggleDialogEdit(state, dialogEdit) {
-                state.dialogEdit = !dialogEdit
+            toggleDialog(state) {
+                state.dialog = !state.dialog
             },
             toggleDialogDelete(state, dialogDelete) {
                 state.dialogDelete = !dialogDelete
@@ -32,35 +37,35 @@ const store = () => {
             closeDialog(state) {
                 state.dialog = false
             },
-            closeDialogEdit(state) {
-                state.dialogEdit = false
-            },
             closeDialogDelete(state) {
                 state.dialogDelete = false
             },
             saveItem(state) {
                 if (state.editedIndex > -1) {
-                    Object.assign(state.tasks[state.editedIndex], state.editedItem)
+                    Object.assign(state.notes.tasks[state.editedIndex], state.editedItem)
                 } else {
-                    state.tasks.push(state.editedItem)
+                    state.notes.tasks.push(state.editedItem)
                 }
             },
             editItem(state, item) {
-                state.editedIndex = state.tasks.indexOf(item)
+                state.editedIndex = state.notes.tasks.indexOf(item)
                 state.editedItem = Object.assign({}, item)
 
                 state.dialog = true
             },
             deleteItem(state, item) {
-                state.editedIndex = state.tasks.indexOf(item)
+                state.editedIndex = state.notes.tasks.indexOf(item)
                 state.editedItem = Object.assign({}, item)
                 state.dialogDelete = true
             },
             setDefault(state){
                 state.dialog = false
                 state.editedItem = {
+                    id: uuid.v1(),
+                    note: 'common',
                     title: '',
-                    description: ''
+                    description: '',
+                    status: false
                 }
                 state.editedIndex = -1
             }
