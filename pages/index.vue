@@ -11,8 +11,8 @@
             >
                 <template v-slot:header.data-table-select> </template>
                 <template v-slot:group.header="props">
-                    <span class="font-weight-bold">
-                        {{props.group }}
+                    <span class="font-weight-bold m-2 pl-2">
+                        Note: {{props.group }}
                     </span>
                 </template>
                 <template v-slot:item.actions="{ item, id }">

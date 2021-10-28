@@ -129,8 +129,7 @@ export default {
         localStorage.todoList = reader.result
         console.log(localStorage.todoList)
         this.extractDataStorage()
-      }
-      
+      }      
     }
   }
 }
