@@ -6,9 +6,6 @@
     >
         
         <v-card>
-            <v-card-title>
-                <span class="text-h5">{{ formTitle }}</span>
-            </v-card-title>
             <v-form ref="myForm" v-model="isValid">
                 <v-container>
                     <v-row>

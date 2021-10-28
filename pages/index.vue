@@ -83,7 +83,8 @@
                 closeDialogDelete:'closeDialogDelete',
                 deleteItem:'deleteItem',
                 deleteItemConfirm: 'deleteItemConfirm',
-                setDefault:'setDefault'
+                setDefault:'setDefault',
+                editItem: 'editItem'
             }),
             deleteStoreItemConfirm (item) {
                 this.deleteItemConfirm()
