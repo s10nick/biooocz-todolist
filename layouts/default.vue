@@ -5,7 +5,22 @@
       fixed
       app
     >
-    TODO List</v-app-bar>
+      TODO List
+      <v-divider
+          class="mx-4"
+          inset
+          vertical
+      ></v-divider>
+      <v-spacer></v-spacer>
+      <v-btn
+        color="primary"
+        class="mb-2" 
+        dark 
+        @click="toggleDialog"
+        >new note
+      </v-btn>
+      <Dialog/>
+    </v-app-bar>
     <v-main>
       <v-container>
         <Nuxt />
@@ -22,8 +37,7 @@
         link 
         text
         small
-        href="https://biooo.cz" 
-        biooo.cz
+        href="https://biooo.cz"
         >biooo.cz
       </v-btn>
        by Vlad Erinenko<span>&copy; {{ new Date().getFullYear() }}</span>
@@ -32,7 +46,10 @@
 </template>
 
 <script>
+import { mapMutations } from 'vuex'
+
 export default {
+  name: 'default',
   data () {
     return {
       clipped: false,
@@ -55,6 +72,17 @@ export default {
       rightDrawer: false,
       title: 'Vuetify.js'
     }
+  },
+  computed: {
+      dialog: {
+          get() { return this.$store.state.dialog },
+          set(value) { this.toggleDialog() }
+      }
+  },
+  methods: {
+    ...mapMutations({
+        toggleDialog:'toggleDialog'
+    }),
   }
 }
 </script>

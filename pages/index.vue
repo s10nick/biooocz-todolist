@@ -3,16 +3,18 @@
 
         <v-col cols="12" sm="8" md="6">
             <v-data-table
-                v-model="selected"
                 :headers="headers"
                 :items="tasks"
-                :items-per-page="5"
-                show-select
-                item-key="title"
-                @item-selected="itemSelected"
-                @toggle-select-all="itemSelected"
+                :items-per-page="perPage"
+                group-by="note"
                 class="elevation-1"
             >
+                <template v-slot:header.data-table-select> </template>
+                <template v-slot:group.header="props">
+                    <span class="font-weight-bold">
+                        {{props.group }}
+                    </span>
+                </template>
                 <template v-slot:top>
                     <v-toolbar flat>
                         <v-btn
@@ -25,7 +27,6 @@
                                 Download Data
                             </download-csv>
                         </v-btn>
-                        
                         <v-spacer></v-spacer>
                         <v-divider
                             class="mx-4"
@@ -43,64 +44,7 @@
                             vertical
                         ></v-divider>
                         <v-spacer></v-spacer>
-                        <v-dialog
-                            v-model="dialog"
-                            max-width="500px"
-                        >
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-btn
-                                    color="primary"
-                                    dark
-                                    class="mb-2"
-                                    v-bind="attrs"
-                                    v-on="on"
-                                >
-                                    New Item
-                                </v-btn>
-                            </template>
-                            <v-card>
-                                <v-card-title>
-                                    <span class="text-h5">{{ formTitle }}</span>
-                                </v-card-title>
-                                <v-container>
-                                    <v-row>
-                                        <v-col
-                                            cols="12"
-                                            sm="6"
-                                            md="4"
-                                        >
-                                            <v-text-field
-                                                v-model="editedItem.title"
-                                                label="Title"
-                                            >
-                                            </v-text-field>
-                                        </v-col>
-                                        <v-col
-                                            cols="12"
-                                            sm="6"
-                                            md="4"
-                                        >
-                                            <v-text-field
-                                                v-model="editedItem.description"
-                                                label="Desription"
-                                            >
-                                            </v-text-field>
-                                        </v-col>
-                                    </v-row>
-                                </v-container>
-                                <v-card-actions>
-                                    <v-spacer></v-spacer>
-                                    <v-btn color="blue darken-1" text @click="closeDialog">Cancel</v-btn>
-                                    <v-btn
-                                    color="blue darken-1"
-                                    text
-                                    @click="saveStoreItems"
-                                    >
-                                    Save
-                                    </v-btn>
-                                </v-card-actions>
-                            </v-card>
-                        </v-dialog>
+                        <Dialog/>
                         <v-dialog v-model="dialogDelete" max-width="500px">
                             <v-card>
                             <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
@@ -140,50 +84,47 @@
     export default {
         data () {
             return {
+                perPage: 10,
                 formTitle: 'Create Task',
-                singleSelect: true,
-                selected: localStorage.selected ? JSON.parse(localStorage.selected) : [],
                 headers: [
-                    { text: 'id', value: 'id'},
-                    { text: 'Title', value: 'title' },
-                    { text: 'Task Description', value: 'description' },
+                    { text: 'Note', value: 'note', sortable: false },
+                    { text: 'Title', value: 'title', sortable: false },
+                    { text: 'Task Description', value: 'description', sortable: false },
+                    { text: 'Complitied', value: 'status', sortable: false },
                     { text: 'Actions', value: 'actions', sortable: false },
                 ],
             }
         },
         computed: {
             tasks: {
-                get() { return this.$store.state.tasks},
-                set(value) { return }
+                get() { return this.$store.state.notes.tasks}
             },
             editedItem: {
                 get() { return this.$store.state.editedItem},
-                set(value) { return }
+                set(value) { return this.$store.state.editedItem = value}
             },
             editedIndex: {
-                get() { return this.$store.state.editedIndex},
-                set(value) { return }
+                get() { return this.$store.state.editedIndex}
             },
             dialog: {
                 get() { return this.$store.state.dialog },
                 set(value) { this.toggleDialog() }
-            },
-            dialogEdit: {
-                get() { return this.$store.state.dialogEdit },
-                set(value) { this.toggleDialogEdit() }
             },
             dialogDelete: {
                 get() { return this.$store.state.dialogDelete },
                 set(value) { this.toggleDialogDelete() }
             }
         },
+        beforeMount() {
+            this.extractDataStorage()
+        },
         methods: {
             ...mapMutations({
+                extractDataStorage: 'extractDataStorage',
+                extractDataStorage: 'extractDataStorage',
                 toggleDialog:'toggleDialog',
-                toggleDialogEdit:'toggleDialogEdit',
                 toggleDialogDelete:'toggleDialogDelete',
                 closeDialog:'closeDialog',
-                closeDialogEdit:'closeDialogEdit',
                 closeDialogDelete:'closeDialogDelete',
                 saveItem:'saveItem',
                 editItem:'editItem',
@@ -191,21 +132,12 @@
                 deleteItemConfirm: 'deleteItemConfirm',
                 setDefault:'setDefault'
             }),
-            saveStoreItems() {
-                this.saveItem()
-                localStorage.todoList = JSON.stringify(this.tasks)
-                this.setDefault()
-            },
             deleteStoreItemConfirm (item) {
                 this.deleteItemConfirm()
                 this.closeDialogDelete()
                 localStorage.todoList = JSON.stringify(this.tasks)
                 this.setDefault()
-            },
-            itemSelected () {
-                this.$nextTick(() => {
-                    localStorage.selected = JSON.stringify(this.selected)  
-                }) 
+                this.extractDataStorage()
             },
             changeToJSON (e) {
                 console.log(e.target.files[0])
