@@ -12,12 +12,46 @@
           vertical
       ></v-divider>
       <v-spacer></v-spacer>
+      <v-file-input 
+          label="Import json"
+          type="file"
+          ref="myFile"
+          @change="importJSON"
+          v-model="file"
+          accept=".json"
+      />
+      <v-divider
+          class="mx-4"
+          inset
+          vertical
+      ></v-divider>
+      <v-spacer></v-spacer>
+      <v-btn
+          color="primary"
+          dark
+          class="mb-2"
+      >
+              <vue-blob-json-csv
+                  tag-name="div"
+                  file-type="json"
+                  file-name="sample"
+                  title="Download JSON"
+                  :data="tasks"
+                  confirm="Do you want to download it?"
+              />
+      </v-btn>
+      <v-divider
+          class="mx-4"
+          inset
+          vertical
+      ></v-divider>
+      <v-spacer></v-spacer>
       <v-btn
         color="primary"
         class="mb-2" 
         dark 
         @click="toggleDialog"
-        >new note
+        >+
       </v-btn>
       <Dialog/>
     </v-app-bar>
@@ -52,6 +86,7 @@ export default {
   name: 'default',
   data () {
     return {
+      file: null,
       clipped: false,
       drawer: false,
       fixed: false,
@@ -74,6 +109,9 @@ export default {
     }
   },
   computed: {
+      tasks: {
+          get() { return this.$store.state.notes.tasks}
+      },
       dialog: {
           get() { return this.$store.state.dialog },
           set(value) { this.toggleDialog() }
@@ -81,8 +119,19 @@ export default {
   },
   methods: {
     ...mapMutations({
+        extractDataStorage: 'extractDataStorage',
         toggleDialog:'toggleDialog'
     }),
+    importJSON (file) {
+      let reader = new FileReader()
+      reader.readAsText(file)
+      reader.onload = () => {
+        localStorage.todoList = reader.result
+        console.log(localStorage.todoList)
+        this.extractDataStorage()
+      }
+      
+    }
   }
 }
 </script>
